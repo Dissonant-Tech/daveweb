@@ -1,0 +1,8 @@
+[submodule "daveweb-ui"]
+	path = daveweb-ui
+	url = git@github.com:Dissonant-Tech/daveweb-ui.git
+	branch = master
+[submodule "daveweb-api"]
+	path = daveweb-api
+	url = git@github.com:Dissonant-Tech/daveweb-api.git
+	branch = master
