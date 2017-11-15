@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+
+  ui:
+    restart: always
+    build: ./daveweb-ui
+    env_file: .env
+    ports:
+      - "4200:4200"
+
+  api:
+    restart: always
+    build: ./daveweb-api
+    env_file: .env
+    links:
+      - db
+    volumes:
+      - api_staticfiles:/static
+    command: ["./wait-for-it.sh", "db:5432", "--", "bash", "docker-entrypoint.sh"]
+    ports:
+      - "8000:8000"
+
+  db:
+    restart: always
+    image: postgres:latest
+    env_file: .env
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+
+  db_data: {}
+
+  api_staticfiles: {}
