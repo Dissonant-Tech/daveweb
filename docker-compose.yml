@@ -3,11 +3,11 @@ version: '3'
 services:
 
   ui:
-    restart: always
+    restart: on-failure
     build: ./daveweb-ui
     env_file: .env
-    ports:
-      - "4200:4200"
+    volumes:
+      - ui_dist:/dist
 
   api:
     restart: always
@@ -16,20 +16,22 @@ services:
     links:
       - db
     volumes:
-      - api_staticfiles:/static
-    command: ["./wait-for-it.sh", "db:5432", "--", "bash", "docker-entrypoint.sh"]
-    ports:
-      - "8000:8000"
+      - api_static:/srv/static
+      - api_media:/srv/media
 
   db:
     restart: always
-    image: postgres:latest
+    image: postgres:alpine
     env_file: .env
     volumes:
       - db_data:/var/lib/postgresql/data
 
 volumes:
 
+  ui_dist: {}
+
   db_data: {}
 
-  api_staticfiles: {}
+  api_static: {}
+
+  api_media: {}

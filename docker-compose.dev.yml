@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+
+  ui:
+    volumes:
+      - /hosthome/dissonance/Code/web/daveweb/daveweb-ui:/usr/src/app
+    ports:
+      - "4200:4200"
+
+  api:
+    volumes:
+      - /hosthome/dissonance/Code/web/daveweb/daveweb-api:/usr/src/app
+    ports:
+      - "8000:8000"
