@@ -6,10 +6,24 @@ services:
     volumes:
       - /hosthome/dissonance/Code/web/daveweb/daveweb-ui:/usr/src/app
     ports:
-      - "4200:4200"
+      - "8026:4200"
+    entrypoint:
+      - ng
+      - serve
+      - --host
+      - 0.0.0.0
+      - --disable-host-check
+      - --environment=dev
 
   api:
     volumes:
       - /hosthome/dissonance/Code/web/daveweb/daveweb-api:/usr/src/app
     ports:
-      - "8000:8000"
+      - "8025:8025"
+    environment:
+      - DEBUG=True
+    entrypoint:
+      - python
+      - manage.py
+      - runserver
+      - 0.0.0.0:8025
