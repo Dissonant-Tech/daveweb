@@ -1,23 +1,29 @@
-version: '3'
+version: '3.3'
 
 services:
 
   ui:
+    restart: "no"
     volumes:
-      - /hosthome/dissonance/Code/web/daveweb/daveweb-ui:/usr/src/app
+      - ${PROJECT_PATH}/daveweb-ui:/usr/src/app
     ports:
       - "8026:4200"
+    links:
+      - api
     entrypoint:
       - ng
       - serve
       - --host
-      - 0.0.0.0
+      - "0.0.0.0"
       - --disable-host-check
+      - --aot
+      - --build-optimizer
       - --environment=dev
 
   api:
+    restart: "no"
     volumes:
-      - /hosthome/dissonance/Code/web/daveweb/daveweb-api:/usr/src/app
+      - ${PROJECT_PATH}/daveweb-api:/usr/src/app
     ports:
       - "8025:8025"
     environment:
