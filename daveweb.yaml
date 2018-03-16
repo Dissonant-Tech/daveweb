@@ -1,0 +1,234 @@
+# Services
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  labels:
+    app: daveweb
+    service: api
+    tier: backend
+spec:
+  type: NodePort
+  ports:
+  - port: 8000
+    targetPort: 8000
+  selector:
+    app: daveweb
+    service: api
+    tier: backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: daveweb
+    service: ui
+    tier: frontend
+  name: ui
+spec:
+  type: NodePort
+  ports:
+  - port: 4200
+    targetPort: 4200
+  selector:
+    app: daveweb
+    service: ui
+    tier: frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: daveweb
+    tier: backend
+    service: db
+  name: db
+spec:
+  ports:
+  - name: headless
+    port: 5432
+    targetPort: 5432
+  selector:
+    app: daveweb
+    service: db
+    tier: backend
+---
+# Deployments
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  selector:
+    matchLabels:
+      app: daveweb
+      service: api
+      tier: backend
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: daveweb
+        service: api
+        tier: backend
+    spec:
+      containers:
+      - name: api
+        image: daveweb-api:v1
+        resources: {}
+        envFrom:
+        - secretRef:
+            name: daveweb-secrets
+        volumeMounts:
+        - mountPath: /srv/static
+          name: api-static
+        - mountPath: /srv/media
+          name: api-media
+      restartPolicy: Always
+      volumes:
+      - name: api-static
+        persistentVolumeClaim:
+          claimName: api-static
+      - name: api-media
+        persistentVolumeClaim:
+          claimName: api-media
+status: {}
+---
+# ui deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui
+spec:
+  selector:
+    matchLabels:
+      app: daveweb
+      service: ui
+      tier: frontend
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: daveweb
+        service: ui
+        tier: frontend
+    spec:
+      containers:
+      - name: ui
+        image: daveweb-ui:v1
+        resources: {}
+        envFrom:
+        - secretRef:
+            name: daveweb-secrets
+        volumeMounts:
+        - mountPath: /dist
+          name: ui-dist
+      restartPolicy: Always
+      volumes:
+      - name: ui-dist
+        persistentVolumeClaim:
+          claimName: ui-dist
+status: {}
+---
+# db deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+spec:
+  selector:
+    matchLabels:
+      app: daveweb
+      service: db
+      tier: backend
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: daveweb
+        service: db
+        tier: backend
+    spec:
+      containers:
+      - image: postgres:alpine
+        name: db
+        resources: {}
+        envFrom:
+        - secretRef:
+            name: daveweb-secrets
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: db-data
+      restartPolicy: Always
+      volumes:
+      - name: db-data
+        persistentVolumeClaim:
+          claimName: db-data
+status: {}
+---
+# Volumes
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: daveweb
+    service: ui-dist
+  name: ui-dist
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: daveweb
+    service: db-data
+  name: db-data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: daveweb
+    service: api-media
+  name: api-media
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: daveweb
+    service: api-static
+  name: api-static
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
