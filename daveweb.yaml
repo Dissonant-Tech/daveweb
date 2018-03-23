@@ -76,7 +76,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: daveweb-api:v1
+        image: daveweb/api:latest
         resources: {}
         envFrom:
         - secretRef:
@@ -86,14 +86,16 @@ spec:
           name: api-static
         - mountPath: /srv/media
           name: api-media
+      imagePullSecrets:
+      - name: regcred
       restartPolicy: Always
       volumes:
       - name: api-static
         persistentVolumeClaim:
-          claimName: api-static
+          claimName: hades-nfs
       - name: api-media
         persistentVolumeClaim:
-          claimName: api-media
+          claimName: hades-nfs
 status: {}
 ---
 # ui deployment
@@ -119,7 +121,7 @@ spec:
     spec:
       containers:
       - name: ui
-        image: daveweb-ui:v1
+        image: daveweb/ui:latest
         resources: {}
         envFrom:
         - secretRef:
@@ -127,11 +129,13 @@ spec:
         volumeMounts:
         - mountPath: /dist
           name: ui-dist
+      imagePullSecrets:
+      - name: regcred
       restartPolicy: Always
       volumes:
       - name: ui-dist
         persistentVolumeClaim:
-          claimName: ui-dist
+          claimName: hades-nfs
 status: {}
 ---
 # db deployment
@@ -169,66 +173,5 @@ spec:
       volumes:
       - name: db-data
         persistentVolumeClaim:
-          claimName: db-data
-status: {}
----
-# Volumes
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app: daveweb
-    service: ui-dist
-  name: ui-dist
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app: daveweb
-    service: db-data
-  name: db-data
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app: daveweb
-    service: api-media
-  name: api-media
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app: daveweb
-    service: api-static
-  name: api-static
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
+          claimName: hades-nfs
 status: {}
